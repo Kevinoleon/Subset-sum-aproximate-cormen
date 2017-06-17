@@ -29,7 +29,7 @@ public  class SubSetAprox {
         
         //el metodo exactUbSet implementa el algoritmo sugerido en el libro
         //haciendo uso de mergelist y sumlist
-        this.exactSubsetSum(S, t);
+        System.out.println("resultado:" + this.exactSubsetSum(S, t));
     }
     
     
@@ -97,7 +97,7 @@ public  class SubSetAprox {
         }
         
         
-        return 0;
+        return Collections.max(L.get(L.size()-1));
     }
     
     public String arrToString(ArrayList<Integer> a){
