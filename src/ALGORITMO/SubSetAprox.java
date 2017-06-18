@@ -15,7 +15,7 @@ public  class SubSetAprox {
     public int n;
     public int t;
     public ArrayList<Integer> S;
-    public ArrayList<ArrayList<Integer>> L;
+    public float e;
     public ArrayList<Integer> Ltrimmed;
     Random rand = new Random();
     Scanner reader = new Scanner(System.in);
@@ -23,13 +23,17 @@ public  class SubSetAprox {
     public SubSetAprox(int n, int t) {
         this.n = n;
         this.t = t;
-        
+        this.e=(float)0.40;
+                
         //genero el conjunto S
         this.S=this.genS(n); 
         
         //el metodo exactUbSet implementa el algoritmo sugerido en el libro
         //haciendo uso de mergelist y sumlist
-        System.out.println("resultado:" + this.exactSubsetSum(S, t));
+        System.out.println("resultado exacto:" + this.exactSubsetSum(S, t));
+        //el metodo aproxSubSet implementa el algoritmo aprox sugerido en el libro
+        //haciendo uso de la funcion trim
+        System.out.println("resultado aproximado "+"(con e= "+e+"): " + this.aproxSubsetSum(S, t, e));
     }
     
     
@@ -38,13 +42,15 @@ public  class SubSetAprox {
         this.n=n;
         S= new ArrayList<Integer>();
         while (S.size() < n) {
-            int random = rand.nextInt(n+5);
+            int random = rand.nextInt(n+11);
             //----------------------------la funcion contains podria alterar la complejidad
             if (!S.contains(random)) {
                 S.add(random);
-                System.out.println(random);
+                
             }
         }
+        System.out.println("Conjunto S: "+arrToString(S));
+        
         return S;
     }
     
@@ -74,8 +80,9 @@ public  class SubSetAprox {
         this.S=S;
         this.t=t;
         int n= S.size();
-        String str="";
         
+        String str="";
+        ArrayList<ArrayList<Integer>> L;
         L=new ArrayList<ArrayList<Integer>>();
         ArrayList<Integer> Laux=new ArrayList<Integer>();
         Laux.add(0);
@@ -91,18 +98,71 @@ public  class SubSetAprox {
                 if (integer >t) {
                     it.remove();
                 }
-}
-            
-            System.out.println("-"+arrToString(L.get(i-1)));
+            }            
+            //System.out.println("P"+(i)+": "+arrToString(L.get(i-1)));
         }
         
         
         return Collections.max(L.get(L.size()-1));
     }
+    //trimList recorta la lista suministrada de acuerdo a un parametro de aproximación
+    public ArrayList<Integer> trimList(ArrayList<Integer> long_list, float p){
+        
+        int m=long_list.size();
+        ArrayList<Integer> t_list= new ArrayList<Integer>();
+        
+        t_list.add(long_list.get(0));
+        int last= long_list.get(0);
+        for (int i = 2; i <= m; i++) {
+            if(long_list.get(i-1)>=(last*(1+p))){
+                t_list.add(long_list.get(i-1));
+                last=long_list.get(i-1);
+            }
+        }        
+        return t_list;
+    }
+    
+    
+    //realiza el mismo procedimiento de exactSubsetSum pero implementa la funcion
+    //trim que recorta la lista deacuerdo a un parametro de aproximación    
+    public int aproxSubsetSum(ArrayList<Integer> S, int t, float e){
+        this.S=S;
+        this.e=e;
+        this.t=t;
+        int n= S.size();
+        String str="";
+        
+        ArrayList<ArrayList<Integer>> L;
+        L=new ArrayList<ArrayList<Integer>>();
+        ArrayList<Integer> Laux=new ArrayList<Integer>();
+        Laux.add(0);
+        L.add(Laux);
+        
+        for (int i = 1; i <= n; i++) {
+            
+            
+            L.add(mergeList(L.get(i-1), sumList(L.get(i-1), S.get(i-1))));
+            
+            //System.out.println("--P"+(i)+": "+arrToString(L.get(i-1)));
+            
+            //nos deshacemos de las sumas mayores a t
+            Iterator<Integer> it = L.get(i-1).iterator();                        
+            while (it.hasNext()) {
+                Integer integer = it.next();
+                if (integer >t) {
+                    it.remove();
+                }
+            }            
+            //System.out.println("Pma"+(i)+": "+arrToString(L.get(i-1)));
+            L.set(i, trimList(L.get(i), e/(2*n)));
+            //System.out.println("Ptr"+(i)+": "+arrToString(L.get(i)));
+        }       
+        return Collections.max(L.get(L.size()-1));
+    }
     
     public String arrToString(ArrayList<Integer> a){
         String str="";
-        for (int i = 0; i < a.size(); i++) {
+        for (int i = 0; i <= a.size()-1; i++) {
             str+=a.get(i).toString()+" ";
         }
         return str;
